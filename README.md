@@ -7,7 +7,7 @@ Ad Attribution SDK
 3. pageView- track page views
 4. trackConversion - provide any conversion events taking place
 
-**test.js ** gives an example of the module's application
+**test.js** gives an example of the module's application
 
 
 The following screenshots show how the module can be imported for use:
