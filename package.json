@@ -1,0 +1,15 @@
+{
+  "name": "luciasdk-test",
+  "version": "1.0.0",
+  "description": "Lucia Protocol, Ad Attribution SDK",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "src/lucia-sdk.js"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}
