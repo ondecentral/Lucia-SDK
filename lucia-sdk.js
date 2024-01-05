@@ -174,7 +174,7 @@ function udata() {
     agent: agnt,
     cores: cores,
     language: lang,
-    screen: scale,
+    devicePixelRatio: scale,
     encoding: encoding,
     timeZone: timeZone,
     plugins: plugins,
@@ -217,6 +217,7 @@ export default class Lucia{
         this.baseURL = options.baseURL;
         this.api_key = options.api_key;
         this.data=udata();
+        this.user=options.username;
     }
 
     async authenticate(){
@@ -251,6 +252,8 @@ export default class Lucia{
             data: this.data}
         }
 
+        this.user = user
+
            await fetch(this.baseURL+'/api/sdk/user',{
             method:'POST',
             headers:headers,
@@ -268,7 +271,8 @@ export default class Lucia{
 
         const request={
             client: this.clientId,
-            page:page
+            page:page,
+            user: this.user
         }
         const headers = {
             'Content-Type': 'application/json',
@@ -288,7 +292,8 @@ export default class Lucia{
     async trackConversion(event){
         const request={
             client: this.clientId,
-            event:event
+            event:event,
+            user: this.user
         }
 
         const headers = {
