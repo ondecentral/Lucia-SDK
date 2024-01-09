@@ -13,6 +13,81 @@ try{
     console.log(e.message);
 }
 
+// not yet working
+
+const { ApplePaySession, matchMedia } = window
+var applePay;
+if (typeof ApplePaySession?.canMakePayments !== 'function') {
+    applePay = false
+}
+
+try {
+   ApplePaySession.canMakePayments() ? applePay = true : applePay = false
+} catch (error) {
+   console.log(error.message)
+}
+ var colorDepth;
+try{
+    colorDepth= window.screen.colorDepth;
+}catch(e){
+    console.log(e.message)
+}
+
+function doesMatch(value) {
+    return matchMedia(`(prefers-contrast: ${value})`).matches
+}
+ var contrast;
+try{
+    if (doesMatch('no-preference')) {
+        contrast = 'None';
+      }
+      if (doesMatch('high') || doesMatch('more')) {
+        contrast = 'More';
+      }
+      if (doesMatch('low') || doesMatch('less')) {
+        contrast = 'Less';
+      }
+      if (doesMatch('forced')) {
+        contrast = 'ForcedColors';
+      }
+}catch(e){
+    console.log(e.message)
+}
+
+var gamut;
+for (const g of ['rec2020', 'p3', 'srgb']) {
+    if (matchMedia(`(color-gamut: ${g})`).matches) {
+        gamut = g
+    }
+  }
+
+  var indexedDB;
+  try{
+    indexedDB = window.indexedDB;
+  }catch(e){
+    console.log(e.message)
+  }
+
+  var localStorage;
+  var openDB;
+
+  try{
+localStorage = window.localStorage;
+openDB = window.openDatabase
+  }catch(e){
+    console.log(e.message)
+  }
+var sourceId;
+
+//private click measurement
+
+try{
+    const link = document.createElement('a')
+    sourceId = link.attributionSourceId ?? link.attributionsourceid
+}catch(e){
+    console.log(e.message)
+} 
+
 var loc;
 try{
    loc= document.referrer;
@@ -92,6 +167,13 @@ try{
     console.log(e.message)
 }
 
+var cpuClass;
+try{
+    cpuClass=navigator.cpuClass;
+}catch(e){
+    console.log(e.message)
+}
+
 var geoPer
 try{
     geoPer = navigator.permissions.geolocation
@@ -132,9 +214,10 @@ try{
     console.log(e.message)
 }
 
-
+var src;
+var hVal;
 // canvas
-
+try{
 const canvas = document.createElement('canvas');
 canvas.id = 'canvasLucia';
 const ctx = canvas.getContext("2d");
@@ -162,8 +245,15 @@ ctx.fillStyle = "rgb(155,255,5)";
 ctx.shadowBlur=8;
 ctx.shadowColor="red";
 ctx.fillRect(20,12,100,5);
-var src =  canvas.toDataURL();
-const hVal = hash(src);
+ src =  canvas.toDataURL();
+ await hash('yourStringHere').then((result) => {
+    hVal= result;
+}).catch((error) => {
+    console.error(error);
+});
+}catch(e){
+    console.log(e.message)
+}
 
 // canvas
 function udata() {
@@ -177,7 +267,6 @@ function udata() {
     devicePixelRatio: scale,
     encoding: encoding,
     timeZone: timeZone,
-    plugins: plugins,
     pluginsLength: pluginsLength,
     pluginNames:pluginNames,
     screenWidth:screenWidth,
@@ -190,24 +279,37 @@ function udata() {
     screenOrientationType:screenOrientationType,
     screenOrientationAngle:screenOrientationAngle,
     uniqueHash:hVal,
-    src:src
-        }
+    //applePay: applePay,
+    colorDepth:colorDepth,
+    contrast:contrast,
+    colorGamut: gamut,
+    cpuClass:cpuClass,
+    indexedDB:indexedDB,
+    openDB:openDB,
+    localStorage:localStorage,
+    sourceId:sourceId
+            
+}
 }
 }
 
 function hash(string) {
-    try{
-    const utf8 = new TextEncoder().encode(string);
-    return crypto.subtle.digest('SHA-256', utf8).then((hashBuffer) => {
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray
-        .map((bytes) => bytes.toString(16).padStart(2, '0'))
-        .join('');
-      return hashHex;
+    return new Promise((resolve, reject) => {
+        try {
+            const utf8 = new TextEncoder().encode(string);
+
+            crypto.subtle.digest('SHA-256', utf8).then((hashBuffer) => {
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray
+                    .map((bytes) => bytes.toString(16).padStart(2, '0'))
+                    .join('');
+                resolve(hashHex);
+            });
+        } catch (e) {
+            console.error(e.message);
+            reject(e);
+        }
     });
-}catch(e){
-    console.log(e.message)
-}
 }
 
 export default class Lucia{
@@ -253,6 +355,7 @@ export default class Lucia{
         }
 
         this.user = user
+        
 
            await fetch(this.baseURL+'/api/sdk/user',{
             method:'POST',
