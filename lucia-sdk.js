@@ -325,20 +325,21 @@ export default class Lucia{
     async authenticate(){
         console.log('inside authenticate');
         const headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
           }
         const req = {
             user: this.clientId,
             key: this.api_key
         };
-       await fetch(this.baseURL+'/api/key/auth',{
+       await fetch(this.baseURL+'/api/key/auth/',{
         method:'POST',
         headers:headers,
         body: JSON.stringify(req)
        }).then((response)=>{
         console.log(response)
        }).catch((error)=>{
-        console.error(error)
+        console.error(error.message)
        });
 
     }
@@ -347,6 +348,7 @@ export default class Lucia{
         console.log('adding user information')
         const headers = {
             'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
           }
         const req={
             client: this.clientId,
@@ -357,7 +359,7 @@ export default class Lucia{
         this.user = user
         
 
-           await fetch(this.baseURL+'/api/sdk/user',{
+           await fetch(this.baseURL+'/api/sdk/user/',{
             method:'POST',
             headers:headers,
             body: JSON.stringify(req)
@@ -379,8 +381,9 @@ export default class Lucia{
         }
         const headers = {
             'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
           }
-           await fetch(this.baseURL+'/api/sdk/page',{
+           await fetch(this.baseURL+'/api/sdk/page/',{
             method:'POST',
             headers:headers,
             body: JSON.stringify(request)
@@ -401,9 +404,31 @@ export default class Lucia{
 
         const headers = {
             'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
           }
         
-           await fetch(this.baseURL+'/api/sdk/conversion',{
+           await fetch(this.baseURL+'/api/sdk/conversion/',{
+            method:'POST',
+            headers:headers,
+            body: JSON.stringify(request)
+           }).then((response)=>{
+            console.log(response)
+           }).catch((error)=>{
+            console.error(error)
+           });
+    }
+
+    async buttonClick(button){
+        const request={
+            client: this.clientId,
+            button:button,
+            user: this.user
+        }
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
+          }
+           await fetch(this.baseURL+'/api/sdk/click/',{
             method:'POST',
             headers:headers,
             body: JSON.stringify(request)
