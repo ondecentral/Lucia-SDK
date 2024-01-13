@@ -377,7 +377,8 @@ export default class Lucia{
         const request={
             client: this.clientId,
             page:page,
-            user: this.user
+            user: {name: this.user,
+                data: this.data}
         }
         const headers = {
             'Content-Type': 'application/json',
@@ -399,7 +400,8 @@ export default class Lucia{
         const request={
             client: this.clientId,
             event:event,
-            user: this.user
+            user: {name: this.user,
+                data: this.data}
         }
 
         const headers = {
@@ -422,7 +424,8 @@ export default class Lucia{
         const request={
             client: this.clientId,
             button:button,
-            user: this.user
+            user: {name: this.user,
+                data: this.data}
         }
         const headers = {
             'Content-Type': 'application/json',
