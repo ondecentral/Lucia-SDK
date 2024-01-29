@@ -13,6 +13,81 @@ try{
     console.log(e.message);
 }
 
+// not yet working
+
+const { ApplePaySession, matchMedia } = window
+var applePay;
+if (typeof ApplePaySession?.canMakePayments !== 'function') {
+    applePay = false
+}
+
+try {
+   ApplePaySession.canMakePayments() ? applePay = true : applePay = false
+} catch (error) {
+   console.log(error.message)
+}
+ var colorDepth;
+try{
+    colorDepth= window.screen.colorDepth;
+}catch(e){
+    console.log(e.message)
+}
+
+function doesMatch(value) {
+    return matchMedia(`(prefers-contrast: ${value})`).matches
+}
+ var contrast;
+try{
+    if (doesMatch('no-preference')) {
+        contrast = 'None';
+      }
+      if (doesMatch('high') || doesMatch('more')) {
+        contrast = 'More';
+      }
+      if (doesMatch('low') || doesMatch('less')) {
+        contrast = 'Less';
+      }
+      if (doesMatch('forced')) {
+        contrast = 'ForcedColors';
+      }
+}catch(e){
+    console.log(e.message)
+}
+
+var gamut;
+for (const g of ['rec2020', 'p3', 'srgb']) {
+    if (matchMedia(`(color-gamut: ${g})`).matches) {
+        gamut = g
+    }
+  }
+
+  var indexedDB;
+  try{
+    indexedDB = window.indexedDB;
+  }catch(e){
+    console.log(e.message)
+  }
+
+  var localStorage;
+  var openDB;
+
+  try{
+localStorage = window.localStorage;
+openDB = window.openDatabase
+  }catch(e){
+    console.log(e.message)
+  }
+var sourceId;
+
+//private click measurement
+
+try{
+    const link = document.createElement('a')
+    sourceId = link.attributionSourceId ?? link.attributionsourceid
+}catch(e){
+    console.log(e.message)
+} 
+
 var loc;
 try{
    loc= document.referrer;
@@ -92,6 +167,13 @@ try{
     console.log(e.message)
 }
 
+var cpuClass;
+try{
+    cpuClass=navigator.cpuClass;
+}catch(e){
+    console.log(e.message)
+}
+
 var geoPer
 try{
     geoPer = navigator.permissions.geolocation
@@ -132,9 +214,10 @@ try{
     console.log(e.message)
 }
 
-
+var src;
+var hVal;
 // canvas
-
+try{
 const canvas = document.createElement('canvas');
 canvas.id = 'canvasLucia';
 const ctx = canvas.getContext("2d");
@@ -162,8 +245,15 @@ ctx.fillStyle = "rgb(155,255,5)";
 ctx.shadowBlur=8;
 ctx.shadowColor="red";
 ctx.fillRect(20,12,100,5);
-var src =  canvas.toDataURL();
-const hVal = hash(src);
+ src =  canvas.toDataURL();
+ await hash('yourStringHere').then((result) => {
+    hVal= result;
+}).catch((error) => {
+    console.error(error);
+});
+}catch(e){
+    console.log(e.message)
+}
 
 // canvas
 function udata() {
@@ -208,6 +298,7 @@ function hash(string) {
     }catch(e){
         console.log(e.message)
     }
+
 }
 
 export default class Lucia{
@@ -223,12 +314,14 @@ export default class Lucia{
     async authenticate(){
         console.log('inside authenticate');
         const headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
           }
         const req = {
             user: this.clientId,
             key: this.api_key
         };
+
         await fetch(this.baseURL+'/api/key/auth',{
             method:'POST',
             headers:headers,
@@ -244,6 +337,7 @@ export default class Lucia{
         console.log('adding user information')
         const headers = {
             'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
           }
         const req={
             client: this.clientId,
@@ -252,6 +346,7 @@ export default class Lucia{
         }
 
         this.user = user
+        
 
         await fetch(this.baseURL+'/api/sdk/user',{
             method:'POST',
@@ -271,12 +366,14 @@ export default class Lucia{
         const request={
             client: this.clientId,
             page:page,
-            user: this.user
+            user: {name: this.user,
+                data: this.data}
         }
         const headers = {
             'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
           }
-           await fetch(this.baseURL+'/api/sdk/page',{
+           await fetch(this.baseURL+'/api/sdk/page/',{
             method:'POST',
             headers:headers,
             body: JSON.stringify(request)
@@ -292,14 +389,38 @@ export default class Lucia{
         const request={
             client: this.clientId,
             event:event,
-            user: this.user
+            user: {name: this.user,
+                data: this.data}
         }
 
         const headers = {
             'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
           }
         
-           await fetch(this.baseURL+'/api/sdk/conversion',{
+           await fetch(this.baseURL+'/api/sdk/conversion/',{
+            method:'POST',
+            headers:headers,
+            body: JSON.stringify(request)
+           }).then((response)=>{
+            console.log(response)
+           }).catch((error)=>{
+            console.error(error)
+           });
+    }
+
+    async buttonClick(button){
+        const request={
+            client: this.clientId,
+            button:button,
+            user: {name: this.user,
+                data: this.data}
+        }
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-API-KEY': this.api_key
+          }
+           await fetch(this.baseURL+'/api/sdk/click/',{
             method:'POST',
             headers:headers,
             body: JSON.stringify(request)
