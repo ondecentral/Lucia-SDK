@@ -169,45 +169,45 @@ const hVal = hash(src);
 function udata() {
     return {
         data: {   
-    location: loc,
-    memory: mem,
-    agent: agnt,
-    cores: cores,
-    language: lang,
-    devicePixelRatio: scale,
-    encoding: encoding,
-    timeZone: timeZone,
-    plugins: plugins,
-    pluginsLength: pluginsLength,
-    pluginNames:pluginNames,
-    screenWidth:screenWidth,
-    screenheight:screenheight,
-    navPer:navPer,
-    renderedPer:renderedPer,
-    geoPer:geoPer,
-    availHeight:availHeight,
-    availWidth:availWidth,
-    screenOrientationType:screenOrientationType,
-    screenOrientationAngle:screenOrientationAngle,
-    uniqueHash:hVal,
-    src:src
+            location: loc,
+            memory: mem,
+            agent: agnt,
+            cores: cores,
+            language: lang,
+            devicePixelRatio: scale,
+            encoding: encoding,
+            timeZone: timeZone,
+            plugins: plugins,
+            pluginsLength: pluginsLength,
+            pluginNames:pluginNames,
+            screenWidth:screenWidth,
+            screenheight:screenheight,
+            navPer:navPer,
+            renderedPer:renderedPer,
+            geoPer:geoPer,
+            availHeight:availHeight,
+            availWidth:availWidth,
+            screenOrientationType:screenOrientationType,
+            screenOrientationAngle:screenOrientationAngle,
+            uniqueHash:hVal,
+            src:src
         }
-}
+    }
 }
 
 function hash(string) {
     try{
-    const utf8 = new TextEncoder().encode(string);
-    return crypto.subtle.digest('SHA-256', utf8).then((hashBuffer) => {
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray
-        .map((bytes) => bytes.toString(16).padStart(2, '0'))
-        .join('');
-      return hashHex;
-    });
-}catch(e){
-    console.log(e.message)
-}
+        const utf8 = new TextEncoder().encode(string);
+        return crypto.subtle.digest('SHA-256', utf8).then((hashBuffer) => {
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray
+            .map((bytes) => bytes.toString(16).padStart(2, '0'))
+            .join('');
+          return hashHex;
+        });
+    }catch(e){
+        console.log(e.message)
+    }
 }
 
 export default class Lucia{
@@ -229,16 +229,15 @@ export default class Lucia{
             user: this.clientId,
             key: this.api_key
         };
-       await fetch(this.baseURL+'/api/key/auth',{
-        method:'POST',
-        headers:headers,
-        body: JSON.stringify(req)
-       }).then((response)=>{
-        console.log(response)
-       }).catch((error)=>{
-        console.error(error)
-       });
-
+        await fetch(this.baseURL+'/api/key/auth',{
+            method:'POST',
+            headers:headers,
+            body: JSON.stringify(req)
+        }).then((response)=>{
+            console.log(response)
+        }).catch((error)=>{
+            console.error(error)
+        });
     }
 
     async userInfo(user){
@@ -254,15 +253,15 @@ export default class Lucia{
 
         this.user = user
 
-           await fetch(this.baseURL+'/api/sdk/user',{
+        await fetch(this.baseURL+'/api/sdk/user',{
             method:'POST',
             headers:headers,
             body: JSON.stringify(req)
-           }).then((response)=>{
+        }).then((response)=>{
             console.log(response)
-           }).catch((error)=>{
+        }).catch((error)=>{
             console.error(error)
-           });
+        });
     }
 
 
