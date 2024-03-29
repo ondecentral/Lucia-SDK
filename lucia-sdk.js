@@ -636,7 +636,7 @@ export default class Lucia {
         client: this.clientId,
         user: { name: user, data: await udata(), userInfo: userInfo },
       };
-      if (localStorage !== undefined) localStorage.setItem("luc_id", user);
+      if (user && user.length > 0) localStorage.setItem("luc_id", user);
       this.user = user;
       await fetch(this.baseURL + "/api/sdk/user/", {
         method: "POST",
