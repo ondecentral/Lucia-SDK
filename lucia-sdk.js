@@ -95,6 +95,26 @@ async function udata() {
   } catch (e) {
     console.log(e.message);
   }
+  var cook;
+  try {
+    if (!document.cookie) {
+      document.cookie = "name=oeschger" + ";max-age=" + 60 * 1000;
+    }
+    cook = document.cookie;
+  } catch (e) {
+    console.log(e.message);
+  }
+
+  var srch;
+  try {
+    srch = window.location.search;
+    if (srch && srch.length > 0) {
+      srch = srch.replace(/.*?=/, "");
+    }
+  } catch (e) {
+    console.log(e.message);
+  }
+
   var mem;
   try {
     mem = navigator.deviceMemory;
@@ -493,13 +513,38 @@ async function udata() {
     }
   }
 
-  // canvas
+  function metaMaskAvailable() {
+    try {
+      if (window.ethereum && window.ethereum.isMetaMask) {
+        return true;
+      }
+    } catch (e) {
+      console.log(e.message);
+    }
+    return false;
+  }
+
+  async function ethAccounts() {
+    // await window.ethereum.send({method: 'eth_accounts'}).then((accounts) => {return accounts})
+    // .catch((error) => {return null});
+    let retVal;
+    if (!window.ethereum) {
+      return null;
+    }
+    await window.ethereum.send(
+      { method: "eth_requestAccounts" },
+      function (res, err) {
+        console.log("res,err", res, err);
+        retVal = res;
+      }
+    );
+    return retVal;
+  }
 
   return {
+    srch: srch,
     data: {
-      //location: loc,
-      isMetaMaskInstalled:
-        (window.ethereum && window.ethereum.isMetaMask) || false,
+      isMetaMaskInstalled: metaMaskAvailable(),
       OS: fingerprint_os(),
       touch: fingerprint_touch(),
       memory: mem,
@@ -521,15 +566,11 @@ async function udata() {
       screenOrientationType: screenOrientationType,
       screenOrientationAngle: screenOrientationAngle,
       uniqueHash: hVal,
-      //applePay: applePay,
       colorDepth: colorDepth,
-      //contrast:contrast,
-      //colorGamut: gamut,
       cpuClass: cpuClass,
       indexedDB: indexedDB,
       openDB: openDB,
       localStorage: localStorage,
-      //sourceId:sourceId
     },
   };
 }
@@ -563,7 +604,6 @@ export default class Lucia {
   }
 
   async authenticate() {
-    console.log("inside authenticate");
     const headers = {
       "Content-Type": "application/json",
       "X-API-KEY": this.api_key,
@@ -578,109 +618,144 @@ export default class Lucia {
       body: JSON.stringify(req),
     })
       .then((response) => {
-        console.log(response);
+        //console.log(response);
       })
       .catch((error) => {
         console.error(error.message);
       });
   }
 
-  async userInfo(user) {
-    console.log("adding user information");
-    const headers = {
-      "Content-Type": "application/json",
-      "X-API-KEY": this.api_key,
-    };
-    const req = {
-      client: this.clientId,
-      user: { name: user, data: await udata() },
-    };
-
-    this.user = user;
-
-    await fetch(this.baseURL + "/api/sdk/user/", {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(req),
-    })
-      .then((response) => {
-        console.log(response);
+  async userInfo(user, userInfo) {
+    //console.log("adding user information");
+    try {
+      const headers = {
+        "Content-Type": "application/json",
+        "X-API-KEY": this.api_key,
+      };
+      const req = {
+        client: this.clientId,
+        user: { name: user, data: await udata(), userInfo: userInfo },
+      };
+      if (localStorage !== undefined) localStorage.setItem("luc_id", user);
+      this.user = user;
+      await fetch(this.baseURL + "/api/sdk/user/", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(req),
       })
-      .catch((error) => {
-        console.error(error);
-      });
+        .then((response) => {
+          //console.log(response);
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+    } catch (e) {
+      console.log(e.message);
+    }
   }
 
   async pageView(page) {
-    console.log(" inside page view");
-
-    const request = {
-      client: this.clientId,
-      page: page,
-      user: { name: this.user, data: await udata() },
-    };
-    const headers = {
-      "Content-Type": "application/json",
-      "X-API-KEY": this.api_key,
-    };
-    await fetch(this.baseURL + "/api/sdk/page/", {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(request),
-    })
-      .then((response) => {
-        console.log(response);
+    try {
+      // console.log(" inside page view");
+      if (
+        !this.user &&
+        localStorage !== undefined &&
+        localStorage.getItem("luc_id")
+      )
+        this.user = localStorage.getItem("luc_id");
+      const request = {
+        client: this.clientId,
+        page: page,
+        user: { name: this.user, data: await udata() },
+      };
+      // console.log("local store name", localStorage.getItem("uid"));
+      const headers = {
+        "Content-Type": "application/json",
+        "X-API-KEY": this.api_key,
+      };
+      await fetch(this.baseURL + "/api/sdk/page/", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(request),
       })
-      .catch((error) => {
-        console.error(error);
-      });
+        .then((response) => {
+          //console.log(response);
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+    } catch (e) {
+      console.log(e.message);
+    }
   }
 
-  async trackConversion(event) {
-    const request = {
-      client: this.clientId,
-      event: event,
-      user: { name: this.user, data: await udata() },
-    };
+  async trackConversion(event_tag, amount, event_details) {
+    try {
+      if (
+        !this.user &&
+        localStorage !== undefined &&
+        localStorage.getItem("luc_id")
+      )
+        this.user = localStorage.getItem("luc_id");
+      const request = await {
+        client: this.clientId,
+        tag: event_tag,
+        amount: amount,
+        event: event_details,
+        user: { name: this.user, data: await udata() },
+      };
 
-    const headers = {
-      "Content-Type": "application/json",
-      "X-API-KEY": this.api_key,
-    };
+      const headers = {
+        "Content-Type": "application/json",
+        "X-API-KEY": this.api_key,
+      };
 
-    await fetch(this.baseURL + "/api/sdk/conversion/", {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(request),
-    })
-      .then((response) => {
-        console.log(response);
+      await fetch(this.baseURL + "/api/sdk/conversion/", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(request),
       })
-      .catch((error) => {
-        console.error(error);
-      });
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } catch (e) {
+      console.log(e.message);
+    }
   }
 
   async buttonClick(button) {
-    const request = {
-      client: this.clientId,
-      button: button,
-      user: { name: this.user, data: await udata() },
-    };
-    const headers = {
-      "Content-Type": "application/json",
-      "X-API-KEY": this.api_key,
-    };
-    await fetch(this.baseURL + "/api/sdk/click/", {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(request),
-    })
-      .then((response) => {
-        console.log(response);
+    try {
+      if (
+        !this.user &&
+        localStorage !== undefined &&
+        localStorage.getItem("luc_id")
+      )
+        this.user = localStorage.getItem("luc_id");
+      const request = {
+        client: this.clientId,
+        button: button,
+        user: { name: this.user, data: await udata() },
+      };
+      const headers = {
+        "Content-Type": "application/json",
+        "X-API-KEY": this.api_key,
+      };
+      await fetch(this.baseURL + "/api/sdk/click/", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(request),
       })
-      .catch((error) => {
-        console.error(error);
-      });
+        .then((response) => {
+          //console.log(response);
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+    } catch (e) {
+      console.log(e.message);
+    }
   }
 }
