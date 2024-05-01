@@ -601,6 +601,8 @@ export default class Lucia {
     this.api_key = options.api_key;
     //this.data= await udata();
     this.user = options.username;
+    this.pollingInterval = null;
+    this.pollingFrequency = 5000;
   }
 
   async authenticate() {
@@ -756,6 +758,60 @@ export default class Lucia {
         });
     } catch (e) {
       console.log(e.message);
+    }
+  }
+
+  async sendWalletInfo(walletAddress) {
+    try {
+      const request = {
+        client: this.clientId,
+        walletAddress: walletAddress,
+        user: {
+          name: this.user,
+          data: await udata(),
+        },
+      };
+      const headers = {
+        "Content-Type": "application/json",
+        "X-API-KEY": this.api_key,
+      };
+      await fetch(this.baseURL + "/api/sdk/wallet/", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(request),
+      })
+        .then((response) => {
+          //console.log(response);
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+    } catch (error) {}
+  }
+
+  async walletConnection() {
+    const pollingInterval = setInterval(async () => {
+      const isConnected = this.checkMetaMaskConnection();
+      if (isConnected) {
+        await this.sendWalletInfo(window.ethereum.selectedAddress);
+        clearInterval(pollingInterval); // Clear interval when connected
+        console.log("Interval cleared");
+      } else {
+        console.log("MetaMask not connected yet..");
+      }
+    }, this.pollingFrequency);
+  }
+
+  checkMetaMaskConnection() {
+    // Check if MetaMask is installed and connected
+    if (
+      window.ethereum &&
+      window.ethereum.isConnected() &&
+      window.ethereum.selectedAddress
+    ) {
+      return true;
+    } else {
+      return false;
     }
   }
 }
