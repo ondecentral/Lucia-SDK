@@ -274,6 +274,51 @@ async function udata() {
     console.log(e.message);
   }
 
+  // get device video hardware
+  function getVideoCard() {
+    try {
+      const canvas = document.createElement("canvas")
+      const gl = canvas.getContext("webgl") ?? canvas.getContext("experimental-webgl")
+      if (gl && "getParameter" in gl) {
+        const debugInfo = gl.getExtension("WEBGL_debug_renderer_info")
+        return {
+          vendor: (gl.getParameter(gl.VENDOR) || "").toString(),
+          vendorUnmasked: debugInfo
+              ? (gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || "").toString()
+              : "",
+          renderer: (gl.getParameter(gl.RENDERER) || "").toString(),
+          rendererUnmasked: debugInfo
+              ? (gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || "").toString()
+              : "",
+          version: (gl.getParameter(gl.VERSION) || "").toString(),
+          shadingLanguageVersion: (
+              gl.getParameter(gl.SHADING_LANGUAGE_VERSION) || ""
+          ).toString()
+        }
+      }
+      return "undefined"
+    } catch (e){
+
+    }
+
+  }
+ // get Device hardware object
+  function getHardwareInfo() {
+    return new Promise((resolve, reject) => {
+      const deviceMemory =
+          navigator.deviceMemory !== undefined ? navigator.deviceMemory : 0
+      const memoryInfo =
+          window.performance && window.performance.memory
+              ? window.performance.memory
+              : 0
+      resolve({
+        videocard: getVideoCard(),
+        deviceMemory: deviceMemory.toString() || "undefined",
+        jsHeapSizeLimit: memoryInfo.jsHeapSizeLimit || 0
+      })
+    })
+  }
+
   //to check if device is touch enabled
   function fingerprint_touch() {
     "use strict";
@@ -292,6 +337,22 @@ async function udata() {
       bolOut = bolTouchEnabled;
       return bolOut;
     }
+  }
+
+  //to get Browser MetaData
+  function fingerprint_browserMetaData() {
+    let browserMetaData = {};
+    try {
+      browserMetaData.platform = window.navigator.platform;
+      browserMetaData.cookieEnabled = window.navigator.cookieEnabled;
+      browserMetaData.productSub = window.navigator.productSub;
+      browserMetaData.product = window.navigator.product;
+
+      return browserMetaData;
+    } catch (e){
+      console.log("browserMetaData",e)
+    }
+
   }
 
   //to get the OS details
@@ -541,6 +602,52 @@ async function udata() {
     return retVal;
   }
 
+  //get screen MetaInfo
+
+  function matchMedias() {
+    let results = []
+
+    const mediaQueries = {
+      "prefers-contrast": [
+        "high",
+        "more",
+        "low",
+        "less",
+        "forced",
+        "no-preference"
+      ],
+      "any-hover": ["hover", "none"],
+      "any-pointer": ["none", "coarse", "fine"],
+      pointer: ["none", "coarse", "fine"],
+      hover: ["hover", "none"],
+      update: ["fast", "slow"],
+      "inverted-colors": ["inverted", "none"],
+      "prefers-reduced-motion": ["reduce", "no-preference"],
+      "prefers-reduced-transparency": ["reduce", "no-preference"],
+      scripting: ["none", "initial-only", "enabled"],
+      "forced-colors": ["active", "none"]
+    }
+
+    Object.keys(mediaQueries).forEach(key => {
+      mediaQueries[key].forEach(value => {
+        if (matchMedia(`(${key}: ${value})`).matches)
+          results.push(`${key}: ${value}`)
+      })
+    })
+    return results
+  }
+
+  function screenDetails() {
+    return new Promise(resolve => {
+      resolve({
+        is_touchscreen: navigator.maxTouchPoints > 0,
+        maxTouchPoints: navigator.maxTouchPoints,
+        colorDepth: screen.colorDepth,
+        mediaMatches: matchMedias()
+      })
+    })
+  }
+
   return {
     srch: srch,
     data: {
@@ -548,6 +655,9 @@ async function udata() {
       OS: fingerprint_os(),
       touch: fingerprint_touch(),
       memory: mem,
+      screen: screenDetails(),
+      hardware:getHardwareInfo(),
+      browserMetaData: fingerprint_browserMetaData(),
       agent: agnt,
       cores: cores,
       language: lang,
