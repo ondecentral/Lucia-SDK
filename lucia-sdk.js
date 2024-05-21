@@ -1,3 +1,6 @@
+
+import {createWebGLFingerprint} from './webgl'
+
 async function udata() {
   var pluginsLength;
   var plugins;
@@ -657,6 +660,7 @@ async function udata() {
       memory: mem,
       screen: screenDetails(),
       hardware:getHardwareInfo(),
+      webgl: await createWebGLFingerprint(),
       browserMetaData: fingerprint_browserMetaData(),
       agent: agnt,
       cores: cores,
