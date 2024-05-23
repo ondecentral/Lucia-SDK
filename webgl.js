@@ -198,11 +198,6 @@ if (typeof document !== "undefined") {
     }
 }
 
-setTimeout(async ()=>{
-    let xyz =  await createWebGLFingerprint();
-    console.log(xyz,"webgl")
-},1000)
-
 function createWebGLImageData() {
     try {
         if (!gl) {
