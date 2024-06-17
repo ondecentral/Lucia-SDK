@@ -1,3 +1,6 @@
+const { v4: uuidv4 } = require("uuid");
+const { sha256, sha224 } = require("js-sha256");
+
 async function udata() {
   var pluginsLength;
   var plugins;
@@ -219,14 +222,14 @@ async function udata() {
 
   var screenOrientationType;
   try {
-    screenOrientationType = screen.orientation.type;
+    screenOrientationType = window.screen.orientation.type;
   } catch (e) {
     console.log(e.message);
   }
 
   var screenOrientationAngle;
   try {
-    screenOrientationAngle = screen.orientation.angle;
+    screenOrientationAngle = window.screen.orientation.angle;
   } catch (e) {
     console.log(e.message);
   }
@@ -263,13 +266,14 @@ async function udata() {
     ctx.shadowColor = "red";
     ctx.fillRect(20, 12, 100, 5);
     src = canvas.toDataURL();
-    await hash(src)
-      .then((result) => {
-        hVal = result;
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    hVal = sha256(src);
+    // await hash(src)
+    //   .then((result) => {
+    //     hVal = result;
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //   });
   } catch (e) {
     console.log(e.message);
   }
@@ -542,10 +546,10 @@ async function udata() {
   }
 
   return {
-    srch: srch,
+    redirectHash: srch,
     data: {
       isMetaMaskInstalled: metaMaskAvailable(),
-      OS: fingerprint_os(),
+      os: fingerprint_os(),
       touch: fingerprint_touch(),
       memory: mem,
       agent: agnt,
@@ -553,7 +557,7 @@ async function udata() {
       language: lang,
       devicePixelRatio: scale,
       encoding: encoding,
-      timeZone: timeZone,
+      timezone: timeZone,
       pluginsLength: pluginsLength,
       pluginNames: pluginNames,
       screenWidth: screenWidth,
@@ -593,6 +597,180 @@ async function hash(string) {
     }
   });
 }
+function isSessionExpired() {
+  const sessionData = getSessionData();
+
+  if (!sessionData) {
+    console.log("Session not set");
+    return true;
+  } else if (Date.now() > sessionData.expiryTime) {
+    console.log("Session has expired");
+    return true;
+  }
+  console.log("Session is active");
+  return false;
+}
+
+function isSessionValid() {
+  const sessionData = getSessionData();
+  if (!sessionData) {
+    console.log("Session data not found in localStorage");
+    return false;
+  }
+  console.log("session invalid");
+  //Calculate hash of the stored session ID
+  hash(sessionData.id)
+    .then((calculatedHash) => {
+      // Compare calculated hash with stored hash
+      if (calculatedHash === sessionData.hash) {
+        console.log("session valid");
+        return true;
+      } else {
+        console.log("session invalid");
+        return false;
+      }
+    })
+    .catch((error) => {
+      console.error("Error calculating hash:", error);
+    });
+}
+
+function getSessionData() {
+  try {
+    if (localStorage && localStorage.getItem("luci_session")) {
+      const sess = JSON.parse(localStorage.getItem("luci_session"));
+      return sess;
+    }
+  } catch (e) {
+    console.log("unable to get session data");
+  }
+}
+
+function getLidData() {
+  try {
+    if (localStorage && localStorage.getItem("lid")) {
+      const lid = localStorage.getItem("lid");
+      return lid;
+    }
+  } catch (e) {
+    console.log("unable to get lid");
+  }
+}
+
+function storeSessionID() {
+  try {
+    //const v =  await isSessionValid()
+    if (isSessionExpired() === true) {
+      const sessionID = generateSessionID();
+      const expiryTime = Date.now() + 24 * 60 * 60 * 1000; // Expiry time: 1 day from now
+      // hash(sessionID)
+      //     .then(hash => {
+      //         const sessionData = {
+      //             id: sessionID,
+      //             hash: hash,
+      //             expiryTime: expiryTime
+      //         };
+      //         localStorage.setItem('luci_session', JSON.stringify(sessionData));
+      //         console.log("Session ID stored in localStorage with hash and expiry time:", sessionData);
+      //     })
+      //     .catch(error => {
+      //         console.error("Error calculating hash:", error);
+      //     });
+      const hash = sha256(sessionID);
+      const sessionData = {
+        id: sessionID,
+        hash: hash,
+        expiryTime: expiryTime,
+      };
+      localStorage.setItem("luci_session", JSON.stringify(sessionData));
+    }
+  } catch (e) {
+    console.log("Exception in storing session id");
+  }
+}
+
+function incrementSessionExpiry() {
+  try {
+    const sess = getSessionData();
+    const fD = sess.expiryTime + 1 * 60 * 1000;
+    const futureDate = new Date(fD);
+    const sessionData = {
+      id: sess.id,
+      hash: sess.hash,
+      expiryTime: futureDate,
+    };
+    localStorage.setItem("luci_session", JSON.stringify(sessionData));
+  } catch (e) {
+    console.log("Exception in increment session");
+  }
+}
+
+function getExpiry() {
+  const sess = getSessionData();
+  const futureDate = new Date(sess.expiryTime);
+  const hours = futureDate.getHours();
+  const minutes = futureDate.getMinutes();
+  const seconds = futureDate.getSeconds();
+
+  // Format hours, minutes, and seconds to ensure they have leading zeros if necessary
+  const formattedHours = String(hours).padStart(2, "0");
+  const formattedMinutes = String(minutes).padStart(2, "0");
+  const formattedSeconds = String(seconds).padStart(2, "0");
+  const formattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  return formattedTime;
+}
+
+function getUser() {
+  try {
+    if (localStorage && localStorage.getItem("luc_uid")) {
+      const luid = localStorage.getItem("luc_uid");
+      console.log(luid);
+      return JSON.stringify(luid);
+    }
+  } catch (e) {
+    console.log("exception in get user");
+  }
+}
+
+function generateSessionID() {
+  return uuidv4();
+}
+
+async function init(api_key, baseURL) {
+  try {
+    if (localStorage) {
+      const id = getLidData();
+      if (!id) {
+        const headers = {
+          "Content-Type": "application/json",
+          "X-API-KEY": api_key,
+        };
+        const req = {
+          user: { data: await udata() },
+          session: getSessionData(),
+        };
+        await fetch(baseURL + "/api/sdk/init/", {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify(req),
+        })
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            const lid = data.lid;
+            localStorage.setItem("lid", lid);
+            console.log("set local storage:", lid);
+          })
+          .catch((error) => {
+            console.error(error.message);
+          });
+      }
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
 
 export default class Lucia {
   constructor(options) {
@@ -603,6 +781,8 @@ export default class Lucia {
     this.user = options.username;
     this.pollingInterval = null;
     this.pollingFrequency = 5000;
+    storeSessionID();
+    init(options.api_key, options.baseURL);
   }
 
   async authenticate() {
@@ -634,11 +814,16 @@ export default class Lucia {
         "Content-Type": "application/json",
         "X-API-KEY": this.api_key,
       };
+      const lid = getLidData();
+      console.log("lid", lid);
+      const session = getSessionData();
       const req = {
         client: this.clientId,
         user: { name: user, data: await udata(), userInfo: userInfo },
+        lid: lid,
+        session: session,
       };
-      if (user && user.length > 0) localStorage.setItem("luc_id", user);
+      if (user && user.length > 0) localStorage.setItem("luc_uid", user);
       this.user = user;
       await fetch(this.baseURL + "/api/sdk/user/", {
         method: "POST",
@@ -658,19 +843,19 @@ export default class Lucia {
 
   async pageView(page) {
     try {
-      // console.log(" inside page view");
-      if (
-        !this.user &&
-        localStorage !== undefined &&
-        localStorage.getItem("luc_id")
-      )
-        this.user = localStorage.getItem("luc_id");
+      const lid = getLidData();
+      console.log("lid", lid);
+      const session = getSessionData();
+      if (!this.user) {
+        this.user = getUser();
+      }
       const request = {
         client: this.clientId,
         page: page,
         user: { name: this.user, data: await udata() },
+        lid: lid,
+        session: session,
       };
-      // console.log("local store name", localStorage.getItem("uid"));
       const headers = {
         "Content-Type": "application/json",
         "X-API-KEY": this.api_key,
@@ -693,18 +878,19 @@ export default class Lucia {
 
   async trackConversion(event_tag, amount, event_details) {
     try {
-      if (
-        !this.user &&
-        localStorage !== undefined &&
-        localStorage.getItem("luc_id")
-      )
-        this.user = localStorage.getItem("luc_id");
+      const lid = getLidData();
+      const session = getSessionData();
+      if (!this.user) {
+        this.user = getUser();
+      }
       const request = await {
         client: this.clientId,
         tag: event_tag,
         amount: amount,
         event: event_details,
         user: { name: this.user, data: await udata() },
+        lid: lid,
+        session: session,
       };
 
       const headers = {
@@ -730,16 +916,18 @@ export default class Lucia {
 
   async buttonClick(button) {
     try {
-      if (
-        !this.user &&
-        localStorage !== undefined &&
-        localStorage.getItem("luc_id")
-      )
-        this.user = localStorage.getItem("luc_id");
+      const lid = getLidData();
+      console.log("lid", lid);
+      const session = getSessionData();
+      if (!this.user) {
+        this.user = getUser();
+      }
       const request = {
         client: this.clientId,
         button: button,
         user: { name: this.user, data: await udata() },
+        lid: lid,
+        session: session,
       };
       const headers = {
         "Content-Type": "application/json",
@@ -763,6 +951,11 @@ export default class Lucia {
 
   async sendWalletInfo(walletAddress) {
     try {
+      const lid = getLidData();
+      const session = getSessionData();
+      if (!this.user) {
+        this.user = getUser();
+      }
       const request = {
         client: this.clientId,
         walletAddress: walletAddress,
@@ -770,6 +963,8 @@ export default class Lucia {
           name: this.user,
           data: await udata(),
         },
+        lid: lid,
+        session: session,
       };
       const headers = {
         "Content-Type": "application/json",
