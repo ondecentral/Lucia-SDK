@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
 const { sha256, sha224 } = require("js-sha256");
+const { Web3 } = require("web3");
 
 async function udata() {
   var pluginsLength;
@@ -949,7 +950,7 @@ export default class Lucia {
     }
   }
 
-  async sendWalletInfo(walletAddress) {
+  async sendWalletInfo(walletAddress, chainId) {
     try {
       const lid = getLidData();
       const session = getSessionData();
@@ -959,6 +960,7 @@ export default class Lucia {
       const request = {
         client: this.clientId,
         walletAddress: walletAddress,
+        chainId: chainId,
         user: {
           name: this.user,
           data: await udata(),
@@ -985,10 +987,16 @@ export default class Lucia {
   }
 
   async walletConnection() {
+    let web3 = new Web3(window.ethereum);
+
     const pollingInterval = setInterval(async () => {
       const isConnected = this.checkMetaMaskConnection();
       if (isConnected) {
-        await this.sendWalletInfo(window.ethereum.selectedAddress);
+        const accounts = await web3.eth.getAccounts();
+
+        const chainId = (await web3.eth.getChainId()).toString();
+
+        await this.sendWalletInfo(accounts[0], chainId);
         clearInterval(pollingInterval); // Clear interval when connected
         console.log("Interval cleared");
       } else {
