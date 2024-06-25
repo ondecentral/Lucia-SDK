@@ -1,7 +1,7 @@
-const { v4: uuidv4 } = require("uuid");
-const { sha256, sha224 } = require("js-sha256");
+import { sha256 } from "js-sha256";
+import CryptoJS from "crypto-js";
 
-async function udata() {
+export async function udata() {
   var pluginsLength;
   var plugins;
   var pluginNames;
@@ -159,7 +159,7 @@ async function udata() {
   var timeZone;
   var date = new Date();
   try {
-    timeZone = date.getTimezoneOffset() / 60;
+    timeZone = -date.getTimezoneOffset() / 60;
   } catch (e) {
     console.log(e.message);
   }
@@ -266,7 +266,8 @@ async function udata() {
     ctx.shadowColor = "red";
     ctx.fillRect(20, 12, 100, 5);
     src = canvas.toDataURL();
-    hVal = sha256(src);
+    hVal = CryptoJS.SHA256(src).toString(CryptoJS.enc.Hex);
+    //hVal = sha256(src);
     // await hash(src)
     //   .then((result) => {
     //     hVal = result;
@@ -480,6 +481,8 @@ async function udata() {
         strOS = "MSN TV (WebTV)";
       } else if (strUserAgent.indexOf("inferno") !== -1) {
         strOS = "Inferno";
+      } else if (strUserAgent) {
+        strOS = strUserAgent;
       } else {
         strOS = "Unknown";
       }
@@ -507,8 +510,10 @@ async function udata() {
         strOSBits = "32 bits";
       } else if (strPlatform.indexOf("android") !== -1) {
         strOSBits = "32 bits";
+      } else if (strUserAgent) {
+        strOSBits = strUserAgent;
       } else {
-        strOSBits = "Unknown";
+        strOSBits = "unknown";
       }
       strOut = strOS + strSep + strOSBits;
       return strOut;
@@ -611,7 +616,7 @@ function isSessionExpired() {
   return false;
 }
 
-function isSessionValid() {
+export function isSessionValid() {
   const sessionData = getSessionData();
   if (!sessionData) {
     console.log("Session data not found in localStorage");
@@ -635,7 +640,7 @@ function isSessionValid() {
     });
 }
 
-function getSessionData() {
+export function getSessionData() {
   try {
     if (localStorage && localStorage.getItem("luci_session")) {
       const sess = JSON.parse(localStorage.getItem("luci_session"));
@@ -646,7 +651,7 @@ function getSessionData() {
   }
 }
 
-function getLidData() {
+export function getLidData() {
   try {
     if (localStorage && localStorage.getItem("lid")) {
       const lid = localStorage.getItem("lid");
@@ -657,7 +662,7 @@ function getLidData() {
   }
 }
 
-function storeSessionID() {
+export function storeSessionID() {
   try {
     //const v =  await isSessionValid()
     if (isSessionExpired() === true) {
@@ -676,7 +681,8 @@ function storeSessionID() {
       //     .catch(error => {
       //         console.error("Error calculating hash:", error);
       //     });
-      const hash = sha256(sessionID);
+      const hash = CryptoJS.SHA256(sessionID).toString(CryptoJS.enc.Hex);
+      //const hash = sha256(sessionID);
       const sessionData = {
         id: sessionID,
         hash: hash,
@@ -689,7 +695,7 @@ function storeSessionID() {
   }
 }
 
-function incrementSessionExpiry() {
+export function incrementSessionExpiry() {
   try {
     const sess = getSessionData();
     const fD = sess.expiryTime + 1 * 60 * 1000;
@@ -705,7 +711,7 @@ function incrementSessionExpiry() {
   }
 }
 
-function getExpiry() {
+export function getExpiry() {
   const sess = getSessionData();
   const futureDate = new Date(sess.expiryTime);
   const hours = futureDate.getHours();
@@ -720,7 +726,7 @@ function getExpiry() {
   return formattedTime;
 }
 
-function getUser() {
+export function getUser() {
   try {
     if (localStorage && localStorage.getItem("luc_uid")) {
       const luid = localStorage.getItem("luc_uid");
@@ -733,10 +739,14 @@ function getUser() {
 }
 
 function generateSessionID() {
-  return uuidv4();
+  if (window && window.crypto) {
+    return window.crypto.randomUUID();
+  } else {
+    return "";
+  }
 }
 
-async function init(api_key, baseURL) {
+export async function init(api_key, baseURL) {
   try {
     if (localStorage) {
       const id = getLidData();
@@ -769,244 +779,5 @@ async function init(api_key, baseURL) {
     }
   } catch (e) {
     console.log(e);
-  }
-}
-
-export default class Lucia {
-  constructor(options) {
-    this.clientId = options.clientId;
-    this.baseURL = options.baseURL;
-    this.api_key = options.api_key;
-    //this.data= await udata();
-    this.user = options.username;
-    this.pollingInterval = null;
-    this.pollingFrequency = 5000;
-    storeSessionID();
-    init(options.api_key, options.baseURL);
-  }
-
-  async authenticate() {
-    const headers = {
-      "Content-Type": "application/json",
-      "X-API-KEY": this.api_key,
-    };
-    const req = {
-      user: this.clientId,
-      key: this.api_key,
-    };
-    await fetch(this.baseURL + "/api/key/auth/", {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(req),
-    })
-      .then((response) => {
-        //console.log(response);
-      })
-      .catch((error) => {
-        console.error(error.message);
-      });
-  }
-
-  async userInfo(user, userInfo) {
-    //console.log("adding user information");
-    try {
-      const headers = {
-        "Content-Type": "application/json",
-        "X-API-KEY": this.api_key,
-      };
-      const lid = getLidData();
-      console.log("lid", lid);
-      const session = getSessionData();
-      const req = {
-        client: this.clientId,
-        user: { name: user, data: await udata(), userInfo: userInfo },
-        lid: lid,
-        session: session,
-      };
-      if (user && user.length > 0) localStorage.setItem("luc_uid", user);
-      this.user = user;
-      await fetch(this.baseURL + "/api/sdk/user/", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(req),
-      })
-        .then((response) => {
-          //console.log(response);
-        })
-        .catch((error) => {
-          console.error(error.message);
-        });
-    } catch (e) {
-      console.log(e.message);
-    }
-  }
-
-  async pageView(page) {
-    try {
-      const lid = getLidData();
-      console.log("lid", lid);
-      const session = getSessionData();
-      if (!this.user) {
-        this.user = getUser();
-      }
-      const request = {
-        client: this.clientId,
-        page: page,
-        user: { name: this.user, data: await udata() },
-        lid: lid,
-        session: session,
-      };
-      const headers = {
-        "Content-Type": "application/json",
-        "X-API-KEY": this.api_key,
-      };
-      await fetch(this.baseURL + "/api/sdk/page/", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(request),
-      })
-        .then((response) => {
-          //console.log(response);
-        })
-        .catch((error) => {
-          console.error(error.message);
-        });
-    } catch (e) {
-      console.log(e.message);
-    }
-  }
-
-  async trackConversion(event_tag, amount, event_details) {
-    try {
-      const lid = getLidData();
-      const session = getSessionData();
-      if (!this.user) {
-        this.user = getUser();
-      }
-      const request = await {
-        client: this.clientId,
-        tag: event_tag,
-        amount: amount,
-        event: event_details,
-        user: { name: this.user, data: await udata() },
-        lid: lid,
-        session: session,
-      };
-
-      const headers = {
-        "Content-Type": "application/json",
-        "X-API-KEY": this.api_key,
-      };
-
-      await fetch(this.baseURL + "/api/sdk/conversion/", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(request),
-      })
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    } catch (e) {
-      console.log(e.message);
-    }
-  }
-
-  async buttonClick(button) {
-    try {
-      const lid = getLidData();
-      console.log("lid", lid);
-      const session = getSessionData();
-      if (!this.user) {
-        this.user = getUser();
-      }
-      const request = {
-        client: this.clientId,
-        button: button,
-        user: { name: this.user, data: await udata() },
-        lid: lid,
-        session: session,
-      };
-      const headers = {
-        "Content-Type": "application/json",
-        "X-API-KEY": this.api_key,
-      };
-      await fetch(this.baseURL + "/api/sdk/click/", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(request),
-      })
-        .then((response) => {
-          //console.log(response);
-        })
-        .catch((error) => {
-          console.error(error.message);
-        });
-    } catch (e) {
-      console.log(e.message);
-    }
-  }
-
-  async sendWalletInfo(walletAddress) {
-    try {
-      const lid = getLidData();
-      const session = getSessionData();
-      if (!this.user) {
-        this.user = getUser();
-      }
-      const request = {
-        client: this.clientId,
-        walletAddress: walletAddress,
-        user: {
-          name: this.user,
-          data: await udata(),
-        },
-        lid: lid,
-        session: session,
-      };
-      const headers = {
-        "Content-Type": "application/json",
-        "X-API-KEY": this.api_key,
-      };
-      await fetch(this.baseURL + "/api/sdk/wallet/", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(request),
-      })
-        .then((response) => {
-          //console.log(response);
-        })
-        .catch((error) => {
-          console.error(error.message);
-        });
-    } catch (error) {}
-  }
-
-  async walletConnection() {
-    const pollingInterval = setInterval(async () => {
-      const isConnected = this.checkMetaMaskConnection();
-      if (isConnected) {
-        await this.sendWalletInfo(window.ethereum.selectedAddress);
-        clearInterval(pollingInterval); // Clear interval when connected
-        console.log("Interval cleared");
-      } else {
-        console.log("MetaMask not connected yet..");
-      }
-    }, this.pollingFrequency);
-  }
-
-  checkMetaMaskConnection() {
-    // Check if MetaMask is installed and connected
-    if (
-      window.ethereum &&
-      window.ethereum.isConnected() &&
-      window.ethereum.selectedAddress
-    ) {
-      return true;
-    } else {
-      return false;
-    }
   }
 }
