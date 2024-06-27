@@ -1,5 +1,6 @@
 import { sha256 } from "js-sha256";
 import CryptoJS from "crypto-js";
+import { v4 as uuidv4 } from "uuid";
 
 export async function udata() {
   var pluginsLength;
@@ -647,7 +648,7 @@ export function getSessionData() {
       return sess;
     }
   } catch (e) {
-    console.log("unable to get session data");
+    console.log("unable to get session data", e);
   }
 }
 
@@ -691,7 +692,7 @@ export function storeSessionID() {
       localStorage.setItem("luci_session", JSON.stringify(sessionData));
     }
   } catch (e) {
-    console.log("Exception in storing session id");
+    console.log("Exception in storing session id", e);
   }
 }
 
@@ -739,8 +740,9 @@ export function getUser() {
 }
 
 function generateSessionID() {
-  if (window && window.crypto) {
-    return window.crypto.randomUUID();
+  const uid = uuidv4();
+  if (uid) {
+    return uid;
   } else {
     return "";
   }
