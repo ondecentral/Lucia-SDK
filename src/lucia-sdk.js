@@ -6,7 +6,7 @@ import {
   init,
   getUser,
 } from "./data.js";
-const { Web3 } = require("web3");
+import Web3 from "web3";
 
 export default class Lucia {
   constructor(options) {
