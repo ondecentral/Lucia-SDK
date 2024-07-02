@@ -1,6 +1,6 @@
 {
   "name": "luciasdk-t3",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Lucia Protocol, Ad Attribution SDK",
   "main": "./src/index.js",
   "module": "./src/index.js",
