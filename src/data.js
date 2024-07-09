@@ -1,4 +1,3 @@
-import { sha256 } from "js-sha256";
 import CryptoJS from "crypto-js";
 import { v4 as uuidv4 } from "uuid";
 

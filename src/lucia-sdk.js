@@ -6,7 +6,6 @@ import {
   init,
   getUser,
 } from "./data.js";
-import Web3 from "web3";
 
 export default class Lucia {
   constructor(options) {
@@ -19,6 +18,13 @@ export default class Lucia {
     this.pollingFrequency = 5000;
     storeSessionID();
     init(options.api_key, options.baseURL);
+
+    this.authenticate = this.authenticate.bind(this);
+    this.userInfo = this.userInfo.bind(this);
+    this.pageView = this.pageView.bind(this);
+    this.trackConversion = this.trackConversion.bind(this);
+    this.buttonClick = this.buttonClick.bind(this);
+    this.sendWalletInfo = this.sendWalletInfo.bind(this);
   }
 
   async authenticate() {
@@ -220,25 +226,6 @@ export default class Lucia {
           console.error(error.message);
         });
     } catch (error) {}
-  }
-
-  async walletConnection() {
-    let web3 = new Web3(window.ethereum);
-
-    const pollingInterval = setInterval(async () => {
-      const isConnected = this.checkMetaMaskConnection();
-      if (isConnected) {
-        const accounts = await web3.eth.getAccounts();
-        const chainId = (await web3.eth.getChainId()).toString();
-
-        await this.sendWalletInfo(accounts[0], chainId);
-
-        clearInterval(pollingInterval); // Clear interval when connected
-        console.log("Interval cleared");
-      } else {
-        console.log("MetaMask not connected yet..");
-      }
-    }, this.pollingFrequency);
   }
 
   checkMetaMaskConnection() {
