@@ -2,8 +2,8 @@
   "name": "luciasdk-t3",
   "version": "1.0.19",
   "description": "Lucia Protocol, Ad Attribution SDK",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
   "umd": "dist/umd",
   "scripts": {
     "build": "rollup -c",
