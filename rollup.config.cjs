@@ -11,6 +11,17 @@ export default {
   input: "src/index.js",
   output: [
     {
+      file: packageJson.main,
+      format: 'cjs',
+      exports: 'default',
+      sourcemap: true,
+    },
+    {
+      file: packageJson.module,
+      format: 'esm',
+      sourcemap: true,
+    },
+    {
       file: `${packageJson.umd}/lucia-sdk-latest.min.js`,
       format: "umd",
       name: "LuciaSDK",
