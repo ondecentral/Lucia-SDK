@@ -57,7 +57,6 @@ export default class Lucia {
         "X-API-KEY": this.api_key,
       };
       const lid = getLidData();
-      console.log("lid", lid);
       const session = getSessionData();
       const req = {
         client: this.clientId,
@@ -87,7 +86,6 @@ export default class Lucia {
   async pageView(page) {
     try {
       const lid = getLidData();
-      console.log("lid", lid);
       const session = getSessionData();
       if (!this.user) {
         this.user = getUser();
@@ -147,7 +145,7 @@ export default class Lucia {
         body: JSON.stringify(request),
       })
         .then((response) => {
-          console.log(response);
+          //console.log(response);
         })
         .catch((error) => {
           console.error(error);
@@ -160,7 +158,6 @@ export default class Lucia {
   async buttonClick(button) {
     try {
       const lid = getLidData();
-      console.log("lid", lid);
       const session = getSessionData();
       if (!this.user) {
         this.user = getUser();
@@ -225,7 +222,9 @@ export default class Lucia {
         .catch((error) => {
           console.error(error.message);
         });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 
   checkMetaMaskConnection() {
