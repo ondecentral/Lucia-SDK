@@ -543,7 +543,7 @@ export async function udata() {
     await window.ethereum.send(
       { method: "eth_requestAccounts" },
       function (res, err) {
-        console.log("res,err", res, err);
+        //console.log("res,err", res, err);
         retVal = res;
       }
     );
@@ -606,37 +606,37 @@ function isSessionExpired() {
   const sessionData = getSessionData();
 
   if (!sessionData) {
-    console.log("Session not set");
+    //console.log("Session not set");
     return true;
   } else if (Date.now() > sessionData.expiryTime) {
-    console.log("Session has expired");
+    // console.log("Session has expired");
     return true;
   }
-  console.log("Session is active");
+  //console.log("Session is active");
   return false;
 }
 
 export function isSessionValid() {
   const sessionData = getSessionData();
   if (!sessionData) {
-    console.log("Session data not found in localStorage");
+    // console.log("Session data not found in localStorage");
     return false;
   }
-  console.log("session invalid");
+  //console.log("session invalid");
   //Calculate hash of the stored session ID
   hash(sessionData.id)
     .then((calculatedHash) => {
       // Compare calculated hash with stored hash
       if (calculatedHash === sessionData.hash) {
-        console.log("session valid");
+        //console.log("session valid");
         return true;
       } else {
-        console.log("session invalid");
+        //console.log("session invalid");
         return false;
       }
     })
     .catch((error) => {
-      console.error("Error calculating hash:", error);
+      console.error(error.message);
     });
 }
 
@@ -647,7 +647,7 @@ export function getSessionData() {
       return sess;
     }
   } catch (e) {
-    console.log("unable to get session data", e);
+    console.log("unable to get session data", e.message);
   }
 }
 
@@ -658,31 +658,16 @@ export function getLidData() {
       return lid;
     }
   } catch (e) {
-    console.log("unable to get lid");
+    console.log("unable to get lid", e.message);
   }
 }
 
 export function storeSessionID() {
   try {
-    //const v =  await isSessionValid()
     if (isSessionExpired() === true) {
       const sessionID = generateSessionID();
       const expiryTime = Date.now() + 24 * 60 * 60 * 1000; // Expiry time: 1 day from now
-      // hash(sessionID)
-      //     .then(hash => {
-      //         const sessionData = {
-      //             id: sessionID,
-      //             hash: hash,
-      //             expiryTime: expiryTime
-      //         };
-      //         localStorage.setItem('luci_session', JSON.stringify(sessionData));
-      //         console.log("Session ID stored in localStorage with hash and expiry time:", sessionData);
-      //     })
-      //     .catch(error => {
-      //         console.error("Error calculating hash:", error);
-      //     });
       const hash = CryptoJS.SHA256(sessionID).toString(CryptoJS.enc.Hex);
-      //const hash = sha256(sessionID);
       const sessionData = {
         id: sessionID,
         hash: hash,
@@ -691,7 +676,7 @@ export function storeSessionID() {
       localStorage.setItem("luci_session", JSON.stringify(sessionData));
     }
   } catch (e) {
-    console.log("Exception in storing session id", e);
+    console.log("Exception in storing session id", e.message);
   }
 }
 
@@ -707,7 +692,7 @@ export function incrementSessionExpiry() {
     };
     localStorage.setItem("luci_session", JSON.stringify(sessionData));
   } catch (e) {
-    console.log("Exception in increment session");
+    console.log(e.message);
   }
 }
 
@@ -730,11 +715,11 @@ export function getUser() {
   try {
     if (localStorage && localStorage.getItem("luc_uid")) {
       const luid = localStorage.getItem("luc_uid");
-      console.log(luid);
+      //console.log(luid);
       return JSON.stringify(luid);
     }
   } catch (e) {
-    console.log("exception in get user");
+    console.log(e.message);
   }
 }
 
@@ -771,7 +756,7 @@ export async function init(api_key, baseURL) {
           .then((data) => {
             const lid = data.lid;
             localStorage.setItem("lid", lid);
-            console.log("set local storage:", lid);
+            // console.log("set local storage:", lid);
           })
           .catch((error) => {
             console.error(error.message);
