@@ -7,8 +7,6 @@ LuciaSDK.init = function (config) {
 
   const userConfig = config || {};
 
-  onloadConfig();
-
   const instance = new Lucia(userConfig);
   LuciaSDK.authenticate = instance.authenticate;
   LuciaSDK.userInfo = instance.userInfo;
