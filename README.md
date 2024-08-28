@@ -24,7 +24,8 @@ The following screenshots show how the module can be imported for use:
 
 backend service console log
 
-<img width="1430" alt="image" src="https://github.com/ondecentral/Lucia-SDK/assets/91156430/79c94c88-88f4-4e80-9b27-84d704ab423a">
+
+![backendservicelog](https://github.com/ondecentral/Lucia-SDK/assets/91156430/fc86dd1b-a2f6-46d9-89f1-80193dc3665d)
 
 Welcome.html and use of sdk in its script script
 
