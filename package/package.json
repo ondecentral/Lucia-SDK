@@ -1,0 +1,19 @@
+{
+  "name": "luciasdk-t2",
+  "version": "1.0.1",
+  "description": "Lucia Protocol, Ad Attribution SDK",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "lucia-sdk.js"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "js-sha256": "^0.11.0",
+    "uuid": "^10.0.0"
+  }
+}
