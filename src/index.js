@@ -15,6 +15,7 @@ LuciaSDK.init = function (config) {
   LuciaSDK.buttonClick = instance.buttonClick;
   LuciaSDK.sendWalletInfo = instance.sendWalletInfo;
   LuciaSDK.checkMetaMaskConnection = instance.checkMetaMaskConnection;
+  LuciaSDK.findIP = instance.findIP;
 };
 
 LuciaSDK.getClientIP = function () {

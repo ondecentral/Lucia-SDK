@@ -25,7 +25,7 @@ export default class Lucia {
     this.trackConversion = this.trackConversion.bind(this);
     this.buttonClick = this.buttonClick.bind(this);
     this.sendWalletInfo = this.sendWalletInfo.bind(this);
-    this.getClientIp = this.getClientIp.bind(this);
+    this.findIP = this.findIP.bind(this);
   }
 
   async authenticate() {
@@ -98,6 +98,7 @@ export default class Lucia {
         lid: lid,
         session: session,
       };
+      console.log("request in pageView: ",request);
       const headers = {
         "Content-Type": "application/json",
         "X-API-KEY": this.api_key,
@@ -230,6 +231,7 @@ export default class Lucia {
 
   checkMetaMaskConnection() {
     // Check if MetaMask is installed and connected
+    console.log("inside check metamask connection")
     if (
       window.ethereum &&
       window.ethereum.isConnected() &&
@@ -240,6 +242,12 @@ export default class Lucia {
       return false;
     }
   }
+
+  findIP() {
+    console.log("inside find IP")
+  }
+
+  
 
   
   
