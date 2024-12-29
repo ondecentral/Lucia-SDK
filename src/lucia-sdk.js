@@ -241,18 +241,6 @@ export default class Lucia {
     }
   }
 
-  async getClientIp() {
-    try {
-        const response = await fetch(this.baseURL + '/api/clip'); // Replace with your server endpoint
-        if (!response.ok) {
-            throw new Error(`Error fetching IP: ${response.statusText}`);
-        }
-        const data = await response.json();
-        return data.ip; // Assuming the server returns { ip: "xxx.xxx.xxx.xxx" }
-    } catch (error) {
-        console.error('Failed to fetch client IP:', error);
-        throw error;
-    }
-  }
+  
   
 }
