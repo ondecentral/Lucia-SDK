@@ -25,6 +25,7 @@ export default class Lucia {
     this.trackConversion = this.trackConversion.bind(this);
     this.buttonClick = this.buttonClick.bind(this);
     this.sendWalletInfo = this.sendWalletInfo.bind(this);
+    this.getClientIp = this.getClientIp.bind(this);
   }
 
   async authenticate() {

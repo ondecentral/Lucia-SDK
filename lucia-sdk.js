@@ -324,7 +324,7 @@ export default class Lucia{
     }
 
     async authenticate(){
-        console.log('inside authenticate');
+        console.log('IS This File NEcc?? inside authenticate');
         const headers = {
             'Content-Type': 'application/json',
             'X-API-KEY': this.api_key
@@ -374,7 +374,7 @@ export default class Lucia{
 
 
     async pageView(page){
-        console.log(' inside page view')
+        console.log('IS THIS FILE NECC? inside page view')
 
         const request={
             client: this.clientId,
