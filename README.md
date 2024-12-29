@@ -37,3 +37,20 @@ Welcome.html and use of sdk in its script script
 backend service console log for welcome page:
 
 <img width="1457" alt="image" src="https://github.com/ondecentral/Lucia-SDK/assets/91156430/00d59e43-57cd-4c7c-a37a-b4433a5ab37e">
+
+
+## Troubleshooting
+
+### Why aren't my updates going through? 
+
+```zsh
+npm run build
+npm publish
+```
+
+if you forget the step to build 
+
+
+### I pushed my updated NPM package to version 1.X.Y but its giving me an error on `npm i`
+
+Thats because sometimes it takes 30 seconds to 2 minutes for npm cache on npmjs.org to update
