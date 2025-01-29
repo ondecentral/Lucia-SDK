@@ -25,6 +25,7 @@ export default class Lucia {
     this.trackConversion = this.trackConversion.bind(this);
     this.buttonClick = this.buttonClick.bind(this);
     this.sendWalletInfo = this.sendWalletInfo.bind(this);
+    this.updateUserId = this.updateUserId.bind(this);
     this.findIP = this.findIP.bind(this);
   }
 
@@ -49,6 +50,54 @@ export default class Lucia {
         console.error(error.message);
       });
   }
+
+  /**
+   * Updates the user ID for a user.
+   * 
+   * @param {object} user - The user object.
+   * @param {string} userId - The user ID to be updated. Should be an email address or crypto wallet address.
+   */
+  async updateUserId(user, userId) {
+    // should handle logic whether userId is a crypto address, 
+    // or an email address
+    let emailUserId = userId; 
+    try {
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': this.api_key
+      };
+      const lid = getLidData(); 
+      const session = getSessionData();
+      // get unique hash from udata() call
+      const data = await udata();
+      console.log('!!data in updateUserId: ', data);
+      const user = { data, userInfo: userInfo };
+      console.log('user: ', user);
+      const { uniqueHash } = user;
+      console.log('uniqueHash: ', uniqueHash);
+      const req = {
+        client: this.clientId, 
+        uniqueHash,
+        userId: emailUserId
+      }
+      if (user && user.length > 0) {
+        localStorage.setItem('luc_uid', JSON.stringify(user));
+      }
+      await fetch(this.baseURL + '/api/sdk/updateUserId/', {
+        method: 'PUT', 
+        headers: headers, 
+        body: JSON.stringify(req)
+      })
+      .then((response) => {
+        console.log('response: ', response);
+      })
+      .catch((error) => {
+         console.error(error.message);
+      })       
+    } catch (e) {
+       console.log(e.message)
+    }
+ }
 
   async userInfo(user, userInfo) {
     //console.log("adding user information");

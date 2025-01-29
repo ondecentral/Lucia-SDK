@@ -6,6 +6,7 @@ Ad Attribution SDK
 2. userInfo - provide basic information regarding the users visiting the web page
 3. pageView- track page views
 4. trackConversion - provide any conversion events taking place
+5. updateUserId - update the user ID for a user.
 
 **test.js** gives an example of the module's application
 
