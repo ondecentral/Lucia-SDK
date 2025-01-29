@@ -51,55 +51,7 @@ export default class Lucia {
       });
   }
 
-  /**
-   * Updates the user ID for a user.
-   * 
-   * @param {object} currentUser - The user object.
-   * @param {string} userId - The user ID to be updated. Should be an email address or crypto wallet address.
-   */
-  async updateUserId(currentUser, userId) {
-    // should handle logic whether userId is a crypto address, 
-    // or an email address
-    let emailUserId = userId; 
-    console.log("emailUserId: ", emailUserId);
-    try {
-      const headers = {
-        'Content-Type': 'application/json',
-        'X-API-KEY': this.api_key
-      };
-      const lid = getLidData(); 
-      const session = getSessionData();
-      // get unique hash from udata() call
-      const data = await udata();
-      console.log('!!data in updateUserId: ', data);
-      const user = { data, userInfo: userInfo };
-      console.log('user: ', user);
-      const { uniqueHash } = user;
-      console.log('uniqueHash: ', uniqueHash);
-      const req = {
-        client: this.clientId, 
-        uniqueHash,
-        user,
-        userId: emailUserId
-      }
-      if (user && user.length > 0) {
-        localStorage.setItem('luc_uid', JSON.stringify(user));
-      }
-      await fetch(this.baseURL + '/api/sdk/updateUserId/', {
-        method: 'PUT', 
-        headers: headers, 
-        body: JSON.stringify(req)
-      })
-      .then((response) => {
-        console.log('response: ', response);
-      })
-      .catch((error) => {
-         console.error(error.message);
-      })       
-    } catch (e) {
-       console.log(e.message)
-    }
- }
+  
 
   async userInfo(user, userInfo) {
     //console.log("adding user information");
@@ -207,6 +159,54 @@ export default class Lucia {
       console.log(e.message);
     }
   }
+
+  /**
+   * Updates the user ID for a user.
+   * 
+   * @param {object} currentUser - The user object.
+   * @param {string} userId - The user ID to be updated. Should be an email address or crypto wallet address.
+   */
+  async updateUserId(currentUser, userId) {
+    // should handle logic whether userId is a crypto address, 
+    // or an email address
+    let emailUserId = userId; 
+    console.log("emailUserId: ", emailUserId);
+    const lid = getLidData();
+    const session = getSessionData();
+    console.log("lid, session: ", lid, session);
+    try {
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': this.api_key
+      };
+      const lid = getLidData(); 
+      const session = getSessionData();
+      const data = await udata(); // this seems to work
+      console.log('!!data in updateUserId: ', data);
+      
+      const req = {
+        client: this.clientId, 
+        lid: lid,
+        session: session,
+        userId: emailUserId
+      }
+      console.log('!!req in updateUserId: ', req);
+      
+      await fetch(this.baseURL + '/api/sdk/updateUserId/', {
+        method: 'PUT', 
+        headers: headers, 
+        body: JSON.stringify(req)
+      })
+      .then((response) => {
+        console.log('response in updateUserId: ', response);
+      })
+      .catch((error) => {
+         console.error('In updateUserId,seems to be an error in sdk', error.message);
+      })       
+    } catch (e) {
+       console.log(e.message)
+    }
+ }
 
   async buttonClick(button) {
     try {
