@@ -54,13 +54,14 @@ export default class Lucia {
   /**
    * Updates the user ID for a user.
    * 
-   * @param {object} user - The user object.
+   * @param {object} currentUser - The user object.
    * @param {string} userId - The user ID to be updated. Should be an email address or crypto wallet address.
    */
-  async updateUserId(user, userId) {
+  async updateUserId(currentUser, userId) {
     // should handle logic whether userId is a crypto address, 
     // or an email address
     let emailUserId = userId; 
+    console.log("emailUserId: ", emailUserId);
     try {
       const headers = {
         'Content-Type': 'application/json',
@@ -78,6 +79,7 @@ export default class Lucia {
       const req = {
         client: this.clientId, 
         uniqueHash,
+        user,
         userId: emailUserId
       }
       if (user && user.length > 0) {
